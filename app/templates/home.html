@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Security Awareness Board — Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Active Announcement Banners -->
+{% if announcements %}
+<div style="margin-bottom:2rem">
+  {% for ann in announcements %}
+  {% set icons = {'critical':'🔴','high':'🟠','warning':'🟡','info':'🔵'} %}
+  <div class="alert-banner sev-{{ ann.severity }}">
+    <div class="alert-banner-icon">{{ icons.get(ann.severity, '🔵') }}</div>
+    <div class="alert-banner-body">
+      <div class="alert-banner-title">{{ ann.title }}</div>
+      <div class="alert-banner-content">{{ ann.content }}</div>
+      <div class="alert-banner-meta">
+        <span>📅 Expires: {{ ann.expires_at or 'No expiry' }}</span>
+        <span>👤 {{ ann.created_by }}</span>
+      </div>
+    </div>
+    {% if session.get('role') == 'admin' %}
+    <div class="btn-group" style="flex-shrink:0">
+      <a href="{{ url_for('announcements.edit', ann_id=ann.id) }}" class="btn btn-secondary btn-sm">✏️</a>
+      <form method="POST" action="{{ url_for('announcements.delete', ann_id=ann.id) }}" onsubmit="return confirm('Delete?')">
+        <button class="btn btn-danger btn-sm">🗑️</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="hero">
+  <div class="hero-badge">⚡ LIVE THREAT AWARENESS PLATFORM</div>
+  <h1>Security Tip &amp;<br>Awareness Board</h1>
+  <p>Stay informed, stay protected. Browse security tips, test your knowledge with quizzes, and join the conversation on cybersecurity best practices.</p>
+  <div class="btn-group" style="justify-content:center">
+    <a href="{{ url_for('announcements.list_announcements') }}" class="btn btn-primary">🚨 View Alerts</a>
+    <a href="{{ url_for('tips.list_tips') }}" class="btn btn-secondary">💡 Tips</a>
+    <a href="{{ url_for('resources.list_resources') }}" class="btn btn-secondary">📚 Resources</a>
+    <a href="{{ url_for('quiz.list_questions') }}" class="btn btn-secondary">❓ Quiz</a>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-number">{{ announcements|length }}</div><div class="stat-label">Active Alerts</div></div>
+  <div class="stat-card"><div class="stat-number">{{ total_tips }}</div><div class="stat-label">Security Tips</div></div>
+  <div class="stat-card"><div class="stat-number">{{ total_resources }}</div><div class="stat-label">Resources</div></div>
+  <div class="stat-card"><div class="stat-number">{{ total_questions }}</div><div class="stat-label">Quiz Questions</div></div>
+  <div class="stat-card"><div class="stat-number">{{ total_comments }}</div><div class="stat-label">Comments</div></div>
+</div>
+
+<!-- Recent Tips -->
+<div class="section">
+  <div class="page-header">
+    <h2 class="section-title">💡 Latest Security Tips</h2>
+    {% if session.get('role') == 'admin' %}<a href="{{ url_for('tips.create') }}" class="btn btn-primary">+ Add Tip</a>{% endif %}
+  </div>
+  {% if tips %}
+  <div class="cards-grid">
+    {% for tip in tips[:3] %}
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">{{ tip.title }}</div>
+        <span class="badge badge-{{ tip.severity }}">{{ tip.severity.upper() }}</span>
+      </div>
+      <div class="card-meta">
+        {% if tip.category_name %}<span class="badge badge-category">{{ tip.category_icon }} {{ tip.category_name }}</span>{% endif %}
+      </div>
+      <div class="card-body">{{ tip.content[:100] }}…</div>
+      <div class="card-footer">
+        <a href="{{ url_for('tips.view_tip', tip_id=tip.id) }}" class="btn btn-secondary btn-sm">Read →</a>
+        {% if session.get('role') == 'admin' %}
+        <div class="btn-group">
+          <a href="{{ url_for('tips.edit', tip_id=tip.id) }}" class="btn btn-secondary btn-sm">✏️</a>
+          <form method="POST" action="{{ url_for('tips.delete', tip_id=tip.id) }}" onsubmit="return confirm('Delete?')">
+            <button class="btn btn-danger btn-sm">🗑️</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="text-align:center;margin-top:1rem">
+    <a href="{{ url_for('tips.list_tips') }}" class="btn btn-secondary">View All Tips →</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Categories -->
+<div class="section">
+  <div class="page-header">
+    <h2 class="section-title">📂 Categories</h2>
+    {% if session.get('role') == 'admin' %}<a href="{{ url_for('categories.create') }}" class="btn btn-secondary">+ Add</a>{% endif %}
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:0.75rem;">
+    {% for cat in categories %}
+    <a href="{{ url_for('tips.list_tips', category_id=cat.id) }}" class="category-chip">
+      {{ cat.icon }} {{ cat.name }}<span class="badge badge-medium" style="margin-left:4px">{{ cat.tip_count }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Recent Comments -->
+<div class="section">
+  <div class="page-header">
+    <h2 class="section-title">💬 Recent Comments</h2>
+    <a href="{{ url_for('comments.list_comments') }}" class="btn btn-secondary">View All</a>
+  </div>
+  {% if comments %}
+    {% for comment in comments[:3] %}
+    <div class="comment-card">
+      <div class="comment-meta">
+        <span class="comment-author">{{ comment.author_name }}</span>
+        <span class="comment-date">{{ comment.created_at[:10] }}{% if comment.tip_title %} · "{{ comment.tip_title }}"{% endif %}</span>
+      </div>
+      <div class="comment-text">{{ comment.content }}</div>
+    </div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}
