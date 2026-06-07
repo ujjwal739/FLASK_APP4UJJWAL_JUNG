@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Security Tip & Awareness Board — Cybersecurity education platform">
+  <title>{% block title %}Security Awareness Board{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="{{ url_for('home.index') }}" class="navbar-brand">
+      <div class="logo-icon">🛡️</div>
+      <span>SEC//BOARD</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('home.index') }}" {% if request.endpoint == 'home.index' %}class="active"{% endif %}>⬡ Dashboard</a></li>
+      <li><a href="{{ url_for('announcements.list_announcements') }}" {% if request.endpoint and 'announcements' in request.endpoint %}class="active"{% endif %}>🚨 Alerts</a></li>
+      <li><a href="{{ url_for('tips.list_tips') }}" {% if request.endpoint and 'tips' in request.endpoint %}class="active"{% endif %}>💡 Tips</a></li>
+      <li><a href="{{ url_for('quiz.list_questions') }}" {% if request.endpoint and 'quiz' in request.endpoint %}class="active"{% endif %}>❓ Quiz</a></li>
+      <li><a href="{{ url_for('resources.list_resources') }}" {% if request.endpoint and 'resources' in request.endpoint %}class="active"{% endif %}>📚 Resources</a></li>
+      <li><a href="{{ url_for('comments.list_comments') }}" {% if request.endpoint and 'comments' in request.endpoint %}class="active"{% endif %}>💬 Comments</a></li>
+      <li><a href="{{ url_for('categories.list_categories') }}" {% if request.endpoint and 'categories' in request.endpoint %}class="active"{% endif %}>📂 Categories</a></li>
+      {% if session.get('role') == 'admin' %}
+      <li><a href="{{ url_for('auth.admin_dashboard') }}" class="nav-admin-link">⚙️ Admin</a></li>
+      {% endif %}
+    </ul>
+    <div class="nav-auth">
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('auth.profile') }}" class="nav-user" style="text-decoration:none">
+          {% if session.get('role') == 'admin' %}<span class="badge badge-critical">ADMIN</span>{% endif %}
+          👤 {{ session.get('username') }}
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sm">Logout</a>
+      {% else %}
+        <a href="{{ url_for('auth.user_login') }}" class="btn btn-secondary btn-sm">Login</a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Register</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main>
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'danger' }}">
+            {{ '✓' if category == 'success' else 'ℹ' if category == 'info' else '⚠' }} {{ message }}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer style="border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;color:var(--text-muted);font-size:0.8rem;margin-top:4rem">
+    🛡️ Security Tip & Awareness Board &nbsp;·&nbsp; ST5041CMD &nbsp;·&nbsp; Built with Flask + Jinja2 + SQLite
+  </footer>
+
+  <script>
+    setTimeout(() => {
+      document.querySelectorAll('.alert').forEach(a => {
+        a.style.transition = 'opacity 0.5s';
+        a.style.opacity = '0';
+      });
+    }, 3500);
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
