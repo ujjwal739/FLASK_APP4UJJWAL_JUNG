@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+  <div style="font-size:2.5rem">⚙️</div>
+  <div>
+    <h1>Admin Dashboard</h1>
+    <p>Full system control — manage users, content, and monitor activity</p>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:0.5rem;flex-wrap:wrap">
+    <a href="{{ url_for('home.index') }}" class="btn btn-secondary btn-sm">← Site</a>
+    <a href="{{ url_for('announcements.create') }}" class="btn btn-primary btn-sm">+ Alert</a>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="admin-stats">
+  <div class="admin-stat"><div class="num">{{ total_users }}</div><div class="lbl">Users</div></div>
+  <div class="admin-stat"><div class="num">{{ total_tips }}</div><div class="lbl">Tips</div></div>
+  <div class="admin-stat"><div class="num">{{ total_questions }}</div><div class="lbl">Quiz Q's</div></div>
+  <div class="admin-stat"><div class="num">{{ total_comments }}</div><div class="lbl">Comments</div></div>
+  <div class="admin-stat"><div class="num">{{ total_categories }}</div><div class="lbl">Categories</div></div>
+  <div class="admin-stat"><div class="num" style="color:{% if pending_resources > 0 %}#fbbf24{% else %}#34d399{% endif %}">{{ pending_resources }}</div><div class="lbl">Pending Resources</div></div>
+</div>
+
+<!-- Quick Actions -->
+<div class="section">
+  <h2 class="section-title">🔗 Quick Actions</h2>
+  <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-bottom:2rem">
+    <a href="{{ url_for('tips.create') }}" class="btn btn-primary">+ Add Tip</a>
+    <a href="{{ url_for('quiz.create') }}" class="btn btn-primary">+ Add Quiz Question</a>
+    <a href="{{ url_for('categories.create') }}" class="btn btn-primary">+ Add Category</a>
+    <a href="{{ url_for('announcements.create') }}" class="btn btn-primary">+ New Alert</a>
+    <a href="{{ url_for('resources.create') }}" class="btn btn-primary">+ Add Resource</a>
+    <a href="{{ url_for('tips.list_tips') }}" class="btn btn-secondary">💡 Tips</a>
+    <a href="{{ url_for('quiz.list_questions') }}" class="btn btn-secondary">❓ Quiz</a>
+    <a href="{{ url_for('comments.list_comments') }}" class="btn btn-secondary">💬 Comments</a>
+    <a href="{{ url_for('resources.list_resources') }}" class="btn btn-secondary">📚 Resources</a>
+  </div>
+</div>
+
+<!-- User Management -->
+<div class="section">
+  <h2 class="section-title">👥 User Management</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td style="color:var(--text-muted)">{{ loop.index }}</td>
+          <td>
+            <strong>{{ user.username }}</strong>
+            {% if user.id == session.get('user_id') %}<span class="badge badge-medium" style="margin-left:4px">You</span>{% endif %}
+          </td>
+          <td style="color:var(--text-muted);font-size:0.82rem">{{ user.email }}</td>
+          <td><span class="badge {{ 'badge-critical' if user.role == 'admin' else 'badge-medium' }}">{{ user.role.upper() }}</span></td>
+          <td><span class="badge {{ 'ann-status-active' if user.is_active else 'ann-status-inactive' }}">{{ '● Active' if user.is_active else '○ Inactive' }}</span></td>
+          <td style="color:var(--text-muted);font-size:0.78rem">{{ user.last_login[:10] if user.last_login else 'Never' }}</td>
+          <td>
+            {% if user.id != session.get('user_id') %}
+            <div class="btn-group">
+              <form method="POST" action="{{ url_for('auth.change_role', user_id=user.id) }}" style="display:flex;gap:4px;align-items:center">
+                <select name="role" class="filter-select" style="padding:0.3rem 0.5rem;font-size:0.75rem">
+                  <option value="user" {% if user.role=='user' %}selected{% endif %}>User</option>
+                  <option value="admin" {% if user.role=='admin' %}selected{% endif %}>Admin</option>
+                </select>
+                <button class="btn btn-secondary btn-sm">Set</button>
+              </form>
+              <form method="POST" action="{{ url_for('auth.toggle_user', user_id=user.id) }}">
+                <button class="btn btn-secondary btn-sm">{{ '🔒' if user.is_active else '🔓' }}</button>
+              </form>
+              <form method="POST" action="{{ url_for('auth.delete_user_route', user_id=user.id) }}" onsubmit="return confirm('Delete {{ user.username }}?')">
+                <button class="btn btn-danger btn-sm">🗑️</button>
+              </form>
+            </div>
+            {% else %}
+            <span style="color:var(--text-muted);font-size:0.8rem">Current session</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Audit Log -->
+<div class="section">
+  <h2 class="section-title">📋 Audit Log <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted)">(last 30 actions)</span></h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Time</th><th>User</th><th>Action</th><th>Details</th><th>IP</th></tr>
+      </thead>
+      <tbody>
+        {% for log in audit %}
+        <tr>
+          <td style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap">{{ log.created_at[:16] }}</td>
+          <td style="font-size:0.85rem"><strong>{{ log.username or '—' }}</strong></td>
+          <td>
+            <span class="badge {% if 'FAIL' in log.action or 'DELETE' in log.action %}badge-critical{% elif 'LOGIN' == log.action %}badge-easy{% elif 'LOGOUT' in log.action %}badge-medium{% else %}badge-category{% endif %}" style="font-size:0.7rem">
+              {{ log.action }}
+            </span>
+          </td>
+          <td style="font-size:0.82rem;color:var(--text-muted)">{{ log.details or '—' }}</td>
+          <td style="font-size:0.78rem;color:var(--text-muted)">{{ log.ip_address or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
