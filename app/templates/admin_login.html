@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Admin Login — SEC//BOARD{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card admin-card">
+    <div class="auth-logo">
+      <span class="logo-big">⚙️</span>
+      <div class="admin-badge-big">🔒 ADMINISTRATOR ACCESS</div>
+      <h2>Admin Portal</h2>
+      <p>Restricted to authorized personnel only</p>
+    </div>
+
+    <form method="POST">
+      <div class="form-group">
+        <label>Admin Username</label>
+        <input type="text" name="username" class="form-control" placeholder="Admin username" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>Admin Password</label>
+        <input type="password" name="password" class="form-control" placeholder="Admin password" required>
+      </div>
+      <button type="submit" class="btn" style="width:100%;justify-content:center;padding:0.75rem;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#0a0e1a;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem">
+        ⚙️ Access Admin Panel
+      </button>
+    </form>
+
+    <div class="auth-footer" style="margin-top:1.5rem">
+      <a href="{{ url_for('auth.user_login') }}" style="color:var(--text-muted);font-size:0.8rem">← Back to User Login</a>
+    </div>
+
+    <div style="margin-top:1.5rem;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:8px;padding:0.9rem;font-size:0.78rem;color:var(--text-muted);text-align:center;">
+      Default: <code style="color:#fbbf24">admin</code> / <code style="color:#fbbf24">admin123</code>
+    </div>
+  </div>
+</div>
+{% endblock %}
