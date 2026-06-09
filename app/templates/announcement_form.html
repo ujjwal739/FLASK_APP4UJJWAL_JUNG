@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Alert{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1rem">
+  <a href="{{ url_for('announcements.list_announcements') }}" class="btn btn-secondary btn-sm">← Back to Alerts</a>
+</div>
+
+<div class="form-card">
+  <h2 style="margin-bottom:1.5rem;font-size:1.25rem">🚨 {{ action }} Security Alert</h2>
+  <form method="POST">
+    <div class="form-group">
+      <label>Alert Title *</label>
+      <input type="text" name="title" class="form-control" value="{{ ann.title if ann else '' }}" placeholder="e.g. New Phishing Campaign Detected" required>
+    </div>
+    <div class="form-group">
+      <label>Alert Content *</label>
+      <textarea name="content" class="form-control" rows="5" placeholder="Describe the threat or announcement in detail..." required>{{ ann.content if ann else '' }}</textarea>
+    </div>
+    <div class="form-group">
+      <label>Severity Level</label>
+      <select name="severity" class="form-control">
+        {% for sev, label in [('info','ℹ️ Info'),('warning','⚠️ Warning'),('high','🟠 High'),('critical','🔴 Critical')] %}
+        <option value="{{ sev }}" {% if ann and ann.severity == sev %}selected{% elif not ann and sev == 'info' %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Expiry Date (optional)</label>
+      <input type="date" name="expires_at" class="form-control" value="{{ ann.expires_at if ann and ann.expires_at else '' }}">
+    </div>
+    {% if ann %}
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" name="is_active" {% if ann.is_active %}checked{% endif %} style="width:16px;height:16px;accent-color:var(--accent)">
+        Active (visible to users)
+      </label>
+    </div>
+    {% endif %}
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">{{ action }} Alert</button>
+      <a href="{{ url_for('announcements.list_announcements') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
