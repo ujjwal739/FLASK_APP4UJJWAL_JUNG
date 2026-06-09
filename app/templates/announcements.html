@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Security Alerts{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>🚨 Security Alerts &amp; Announcements</h2>
+  {% if session.get('role') == 'admin' %}
+  <a href="{{ url_for('announcements.create') }}" class="btn btn-primary">+ New Alert</a>
+  {% endif %}
+</div>
+
+{% set icons = {'critical':'🔴','high':'🟠','warning':'🟡','info':'🔵'} %}
+{% set labels = {'critical':'CRITICAL','high':'HIGH','warning':'WARNING','info':'INFO'} %}
+
+{% if announcements %}
+  {% for ann in announcements %}
+  <div class="alert-banner sev-{{ ann.severity }}" style="margin-bottom:1rem">
+    <div class="alert-banner-icon">{{ icons.get(ann.severity, '🔵') }}</div>
+    <div class="alert-banner-body">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.4rem;flex-wrap:wrap">
+        <div class="alert-banner-title">{{ ann.title }}</div>
+        <span class="badge badge-{{ 'critical' if ann.severity == 'critical' else 'high' if ann.severity in ['high','warning'] else 'medium' }}">
+          {{ labels.get(ann.severity, 'INFO') }}
+        </span>
+        <span class="badge {{ 'ann-status-active' if ann.is_active else 'ann-status-inactive' }}">
+          {{ '● Active' if ann.is_active else '○ Inactive' }}
+        </span>
+      </div>
+      <div class="alert-banner-content">{{ ann.content }}</div>
+      <div class="alert-banner-meta">
+        <span>📅 Posted: {{ ann.created_at[:10] }}</span>
+        <span>⏰ Expires: {{ ann.expires_at or 'Never' }}</span>
+        <span>👤 By: {{ ann.created_by }}</span>
+      </div>
+    </div>
+    {% if session.get('role') == 'admin' %}
+    <div style="display:flex;flex-direction:column;gap:0.4rem;flex-shrink:0">
+      <form method="POST" action="{{ url_for('announcements.toggle', ann_id=ann.id) }}">
+        <button class="btn btn-secondary btn-sm" style="width:100%">{{ '⏸ Deactivate' if ann.is_active else '▶ Activate' }}</button>
+      </form>
+      <a href="{{ url_for('announcements.edit', ann_id=ann.id) }}" class="btn btn-secondary btn-sm">✏️ Edit</a>
+      <form method="POST" action="{{ url_for('announcements.delete', ann_id=ann.id) }}" onsubmit="return confirm('Delete this alert?')">
+        <button class="btn btn-danger btn-sm" style="width:100%">🗑️ Delete</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+{% else %}
+<div class="empty-state">
+  <div class="icon">🚨</div>
+  <p>No alerts at this time. Stay vigilant!</p>
+  {% if session.get('role') == 'admin' %}<a href="{{ url_for('announcements.create') }}" class="btn btn-primary">Post First Alert</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
