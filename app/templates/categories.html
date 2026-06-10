@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>📂 Categories</h2>
+  {% if session.get('role') == 'admin' %}
+  <a href="{{ url_for('categories.create') }}" class="btn btn-primary">+ Add Category</a>
+  {% endif %}
+</div>
+
+{% if categories %}
+<div class="cards-grid">
+  {% for cat in categories %}
+  <div class="card">
+    <div class="card-header">
+      <div style="font-size:2rem">{{ cat.icon }}</div>
+      <span class="badge badge-medium">{{ cat.tip_count }} tips</span>
+    </div>
+    <div class="card-title" style="margin-bottom:0.5rem">{{ cat.name }}</div>
+    <div class="card-body">{{ cat.description or 'No description.' }}</div>
+    <div class="card-footer">
+      <a href="{{ url_for('tips.list_tips', category_id=cat.id) }}" class="btn btn-secondary btn-sm">View Tips →</a>
+      {% if session.get('role') == 'admin' %}
+      <div class="btn-group">
+        <a href="{{ url_for('categories.edit', cat_id=cat.id) }}" class="btn btn-secondary btn-sm">✏️ Edit</a>
+        <form method="POST" action="{{ url_for('categories.delete', cat_id=cat.id) }}" onsubmit="return confirm('Delete category?')">
+          <button class="btn btn-danger btn-sm">🗑️</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="icon">📂</div>
+  <p>No categories yet.</p>
+  {% if session.get('role') == 'admin' %}<a href="{{ url_for('categories.create') }}" class="btn btn-primary">Create First Category</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
