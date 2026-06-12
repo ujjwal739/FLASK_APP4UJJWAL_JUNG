@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Comments{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>💬 User Comments</h2>
+  <span style="color:var(--text-muted);font-size:0.875rem">{{ comments|length }} total</span>
+</div>
+
+{% if comments %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Author</th>
+        <th>Comment</th>
+        <th>Tip</th>
+        <th>Status</th>
+        <th>Date</th>
+        {% if session.get('role') == 'admin' %}<th>Actions</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for comment in comments %}
+      <tr>
+        <td style="color:var(--text-muted)">{{ loop.index }}</td>
+        <td><strong>{{ comment.author_name }}</strong></td>
+        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ comment.content }}</td>
+        <td>
+          {% if comment.tip_title %}
+          <a href="{{ url_for('tips.view_tip', tip_id=comment.tip_id) }}" style="color:var(--accent);text-decoration:none;font-size:0.8rem">{{ comment.tip_title[:25] }}…</a>
+          {% else %}<span style="color:var(--text-muted)">—</span>{% endif %}
+        </td>
+        <td><span class="badge {{ 'badge-easy' if comment.approved else 'badge-critical' }}">{{ '✓ Approved' if comment.approved else '✗ Hidden' }}</span></td>
+        <td style="color:var(--text-muted);font-size:0.8rem">{{ comment.created_at[:10] }}</td>
+        {% if session.get('role') == 'admin' %}
+        <td>
+          <div class="btn-group">
+            <form method="POST" action="{{ url_for('comments.toggle', comment_id=comment.id) }}">
+              <button class="btn btn-secondary btn-sm" title="Toggle visibility">👁️</button>
+            </form>
+            <a href="{{ url_for('comments.edit', comment_id=comment.id) }}" class="btn btn-secondary btn-sm">✏️</a>
+            <form method="POST" action="{{ url_for('comments.delete', comment_id=comment.id) }}" onsubmit="return confirm('Delete?')">
+              <button class="btn btn-danger btn-sm">🗑️</button>
+            </form>
+          </div>
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="icon">💬</div>
+  <p>No comments yet.</p>
+</div>
+{% endif %}
+{% endblock %}
