@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Security Quiz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>❓ Security Quiz</h2>
+  {% if session.get('role') == 'admin' %}
+  <a href="{{ url_for('quiz.create') }}" class="btn btn-primary">+ Add Question</a>
+  {% endif %}
+</div>
+
+{% if not session.get('user_id') %}
+<div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:0.875rem;color:var(--text-muted)">
+  ℹ️ <a href="{{ url_for('auth.user_login') }}" style="color:var(--accent)">Log in</a> to answer quiz questions and check your answers.
+</div>
+{% endif %}
+
+<form method="GET" class="filters">
+  <select name="category_id" class="filter-select" onchange="this.form.submit()">
+    <option value="">All Categories</option>
+    {% for cat in categories %}
+    <option value="{{ cat.id }}" {% if selected_category == cat.id %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="difficulty" class="filter-select" onchange="this.form.submit()">
+    <option value="">All Difficulties</option>
+    <option value="easy" {% if selected_difficulty == 'easy' %}selected{% endif %}>🟢 Easy</option>
+    <option value="medium" {% if selected_difficulty == 'medium' %}selected{% endif %}>🟡 Medium</option>
+    <option value="hard" {% if selected_difficulty == 'hard' %}selected{% endif %}>🔴 Hard</option>
+  </select>
+</form>
+
+{% if questions %}
+  {% for q in questions %}
+  <div class="quiz-card">
+    <div class="card-meta" style="margin-bottom:0.75rem">
+      <span class="badge badge-{{ q.difficulty }}">{{ q.difficulty.upper() }}</span>
+      {% if q.category_name %}<span class="badge badge-category">{{ q.category_name }}</span>{% endif %}
+      {% if session.get('role') == 'admin' %}
+      <div class="btn-group" style="margin-left:auto">
+        <a href="{{ url_for('quiz.edit', question_id=q.id) }}" class="btn btn-secondary btn-sm">✏️</a>
+        <form method="POST" action="{{ url_for('quiz.delete', question_id=q.id) }}" onsubmit="return confirm('Delete?')">
+          <button class="btn btn-danger btn-sm">🗑️</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+    <div class="quiz-question">{{ loop.index }}. {{ q.question }}</div>
+    <div class="options-grid" data-qid="{{ q.id }}">
+      {% for opt, label in [('a', q.option_a), ('b', q.option_b), ('c', q.option_c), ('d', q.option_d)] %}
+      <button class="option-btn"
+        data-option="{{ opt }}"
+        {% if session.get('user_id') %}onclick="checkAnswer(this, {{ q.id }}, '{{ opt }}')"{% else %}onclick="showLoginPrompt()" title="Log in to answer"{% endif %}>
+        <span class="option-label">{{ opt.upper() }}</span> {{ label }}
+      </button>
+      {% endfor %}
+    </div>
+    {% if q.explanation %}
+    <div class="explanation-box" id="exp-{{ q.id }}">💡 {{ q.explanation }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+{% else %}
+<div class="empty-state">
+  <div class="icon">❓</div>
+  <p>No quiz questions yet.</p>
+  {% if session.get('role') == 'admin' %}<a href="{{ url_for('quiz.create') }}" class="btn btn-primary">Add First Question</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function checkAnswer(btn, qid, selected) {
+  const grid = btn.closest('.options-grid');
+  const allBtns = grid.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+  const res = await fetch('/quiz/check', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({question_id: qid, selected})
+  });
+  const data = await res.json();
+  allBtns.forEach(b => { if (b.dataset.option === data.correct_option) b.classList.add('correct'); });
+  if (!data.correct) btn.classList.add('wrong');
+  const expBox = document.getElementById('exp-' + qid);
+  if (expBox) expBox.style.display = 'block';
+}
+
+function showLoginPrompt() {
+  if (confirm('You need to log in to answer quiz questions. Go to login page?')) {
+    window.location.href = '{{ url_for("auth.user_login") }}';
+  }
+}
+</script>
+{% endblock %}
