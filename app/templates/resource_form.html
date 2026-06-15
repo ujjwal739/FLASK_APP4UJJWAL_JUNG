@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Resource{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1rem">
+  <a href="{{ url_for('resources.list_resources') }}" class="btn btn-secondary btn-sm">← Back to Resources</a>
+</div>
+
+<div class="form-card">
+  <h2 style="margin-bottom:0.5rem;font-size:1.25rem">📚 {{ action }} Resource</h2>
+  {% if action == 'Suggest' %}
+  <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.5rem">Your suggestion will be reviewed by an admin before being published.</p>
+  {% endif %}
+
+  <form method="POST">
+    <div class="form-group">
+      <label>Title *</label>
+      <input type="text" name="title" class="form-control" value="{{ resource.title if resource else '' }}" placeholder="e.g. Have I Been Pwned" required>
+    </div>
+    <div class="form-group">
+      <label>URL *</label>
+      <input type="url" name="url" class="form-control" value="{{ resource.url if resource else '' }}" placeholder="https://..." required>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea name="description" class="form-control" rows="3" placeholder="Brief description of this resource...">{{ resource.description if resource else '' }}</textarea>
+    </div>
+    <div class="form-group">
+      <label>Resource Type</label>
+      <select name="resource_type" class="form-control">
+        {% for t in resource_types %}
+        <option value="{{ t }}" {% if resource and resource.resource_type == t %}selected{% elif not resource and t == 'article' %}selected{% endif %}>
+          {% if t == 'article' %}📄{% elif t == 'video' %}🎥{% elif t == 'tool' %}🔧{% elif t == 'guide' %}📖{% elif t == 'course' %}🎓{% endif %}
+          {{ t.capitalize() }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select name="category_id" class="form-control">
+        <option value="">— None —</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if resource and resource.category_id == cat.id %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if session.get('role') == 'admin' and resource %}
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" name="approved" {% if resource.approved %}checked{% endif %} style="width:16px;height:16px;accent-color:var(--accent)">
+        Approved (visible to users)
+      </label>
+    </div>
+    {% endif %}
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">{{ action }} Resource</button>
+      <a href="{{ url_for('resources.list_resources') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
