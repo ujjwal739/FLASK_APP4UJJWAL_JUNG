@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Security Resources Library{% endblock %}
+
+{% macro type_icon(t) %}
+  {% if t == 'article' %}📄{% elif t == 'video' %}🎥{% elif t == 'tool' %}🔧{% elif t == 'guide' %}📖{% elif t == 'course' %}🎓{% else %}📌{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="page-header">
+  <h2>📚 Security Resources Library</h2>
+  <div class="btn-group">
+    {% if pending_count > 0 %}
+    <span class="pending-badge">⏳ {{ pending_count }} Pending</span>
+    {% endif %}
+    {% if session.get('role') == 'admin' %}
+    <a href="{{ url_for('resources.create') }}" class="btn btn-primary">+ Add Resource</a>
+    {% elif session.get('user_id') %}
+    <a href="{{ url_for('resources.suggest') }}" class="btn btn-secondary">💡 Suggest Resource</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Type filter pills -->
+<div class="type-filters">
+  <a href="{{ url_for('resources.list_resources') }}" class="type-filter-btn {% if not selected_type %}active{% endif %}">All</a>
+  {% for t in resource_types %}
+  <a href="{{ url_for('resources.list_resources', resource_type=t, category_id=selected_category) }}"
+     class="type-filter-btn {% if selected_type == t %}active{% endif %}">
+    {{ type_icon(t) }} {{ t.capitalize() }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Category filter -->
+<form method="GET" class="filters">
+  {% if selected_type %}<input type="hidden" name="resource_type" value="{{ selected_type }}">{% endif %}
+  <select name="category_id" class="filter-select" onchange="this.form.submit()">
+    <option value="">All Categories</option>
+    {% for cat in categories %}
+    <option value="{{ cat.id }}" {% if selected_category == cat.id %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+{% if resources %}
+<div class="cards-grid">
+  {% for res in resources %}
+  <div class="resource-card">
+    <div style="display:flex;align-items:center;gap:0.75rem">
+      <div class="resource-type-icon type-{{ res.resource_type }}">{{ type_icon(res.resource_type) }}</div>
+      <div style="flex:1;min-width:0">
+        <div class="card-title" style="font-size:0.95rem">{{ res.title }}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">{{ res.resource_type.capitalize() }}</div>
+      </div>
+      {% if not res.approved %}
+      <span class="pending-badge" style="font-size:0.7rem;padding:0.2rem 0.5rem">Pending</span>
+      {% endif %}
+    </div>
+
+    {% if res.description %}
+    <div class="card-body" style="margin:0;font-size:0.85rem">{{ res.description }}</div>
+    {% endif %}
+
+    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+      {% if res.category_name %}
+      <span class="badge badge-category">{{ res.category_name }}</span>
+      {% endif %}
+      <span style="color:var(--text-muted);font-size:0.72rem;margin-left:auto">by {{ res.submitted_by }}</span>
+    </div>
+
+    <div class="card-footer">
+      <a href="{{ res.url }}" target="_blank" rel="noopener" class="resource-link">🔗 Open Resource ↗</a>
+      {% if session.get('role') == 'admin' %}
+      <div class="btn-group">
+        <form method="POST" action="{{ url_for('resources.toggle', res_id=res.id) }}">
+          <button class="btn btn-secondary btn-sm" title="Toggle approval">{{ '✓' if res.approved else '⏳' }}</button>
+        </form>
+        <a href="{{ url_for('resources.edit', res_id=res.id) }}" class="btn btn-secondary btn-sm">✏️</a>
+        <form method="POST" action="{{ url_for('resources.delete', res_id=res.id) }}" onsubmit="return confirm('Delete?')">
+          <button class="btn btn-danger btn-sm">🗑️</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="icon">📚</div>
+  <p>No resources found.</p>
+  {% if session.get('role') == 'admin' %}
+  <a href="{{ url_for('resources.create') }}" class="btn btn-primary">Add First Resource</a>
+  {% elif session.get('user_id') %}
+  <a href="{{ url_for('resources.suggest') }}" class="btn btn-secondary">Suggest a Resource</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
