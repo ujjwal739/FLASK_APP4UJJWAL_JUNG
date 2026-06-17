@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Security Tips{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>💡 Security Tips</h2>
+  {% if session.get('role') == 'admin' %}
+  <a href="{{ url_for('tips.create') }}" class="btn btn-primary">+ Add New Tip</a>
+  {% endif %}
+</div>
+
+<form method="GET" class="filters">
+  <select name="category_id" class="filter-select" onchange="this.form.submit()">
+    <option value="">All Categories</option>
+    {% for cat in categories %}
+    <option value="{{ cat.id }}" {% if selected_category == cat.id %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="severity" class="filter-select" onchange="this.form.submit()">
+    <option value="">All Severities</option>
+    <option value="critical" {% if selected_severity == 'critical' %}selected{% endif %}>🔴 Critical</option>
+    <option value="high" {% if selected_severity == 'high' %}selected{% endif %}>🟠 High</option>
+    <option value="medium" {% if selected_severity == 'medium' %}selected{% endif %}>🔵 Medium</option>
+    <option value="low" {% if selected_severity == 'low' %}selected{% endif %}>🟢 Low</option>
+  </select>
+</form>
+
+{% if tips %}
+<div class="cards-grid">
+  {% for tip in tips %}
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">{{ tip.title }}</div>
+      <span class="badge badge-{{ tip.severity }}">{{ tip.severity.upper() }}</span>
+    </div>
+    <div class="card-meta">
+      {% if tip.category_name %}<span class="badge badge-category">{{ tip.category_icon }} {{ tip.category_name }}</span>{% endif %}
+      <span style="color:var(--text-muted);font-size:0.75rem;margin-left:auto">{{ tip.created_at[:10] }}</span>
+    </div>
+    <div class="card-body">{{ tip.content[:140] }}{% if tip.content|length > 140 %}…{% endif %}</div>
+    <div class="card-footer">
+      <a href="{{ url_for('tips.view_tip', tip_id=tip.id) }}" class="btn btn-secondary btn-sm">Read →</a>
+      {% if session.get('role') == 'admin' %}
+      <div class="btn-group">
+        <a href="{{ url_for('tips.edit', tip_id=tip.id) }}" class="btn btn-secondary btn-sm">✏️ Edit</a>
+        <form method="POST" action="{{ url_for('tips.delete', tip_id=tip.id) }}" onsubmit="return confirm('Delete tip?')">
+          <button class="btn btn-danger btn-sm">🗑️</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="icon">💡</div>
+  <p>No tips found for the selected filters.</p>
+  {% if session.get('role') == 'admin' %}<a href="{{ url_for('tips.create') }}" class="btn btn-primary">Add First Tip</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
