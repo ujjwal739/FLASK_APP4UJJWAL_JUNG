@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Tip{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1rem">
+  <a href="{{ url_for('tips.list_tips') }}" class="btn btn-secondary btn-sm">← Back to Tips</a>
+</div>
+
+<div class="form-card">
+  <h2 style="margin-bottom:1.5rem;font-size:1.25rem">{{ action }} Security Tip</h2>
+  <form method="POST">
+    <div class="form-group">
+      <label>Title *</label>
+      <input type="text" name="title" class="form-control" value="{{ tip.title if tip else '' }}" placeholder="e.g. Enable Two-Factor Authentication" required>
+    </div>
+    <div class="form-group">
+      <label>Content *</label>
+      <textarea name="content" class="form-control" rows="6" placeholder="Describe the security tip in detail..." required>{{ tip.content if tip else '' }}</textarea>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select name="category_id" class="form-control">
+        <option value="">— Select Category —</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if tip and tip.category_id == cat.id %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Severity Level</label>
+      <select name="severity" class="form-control">
+        {% for level in ['low', 'medium', 'high', 'critical'] %}
+        <option value="{{ level }}" {% if tip and tip.severity == level %}selected{% elif not tip and level == 'medium' %}selected{% endif %}>{{ level.upper() }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">{{ action }} Tip</button>
+      <a href="{{ url_for('tips.list_tips') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
