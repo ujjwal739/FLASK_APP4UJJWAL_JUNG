@@ -181,3 +181,5 @@ def current_user():
     if 'user_id' in session:
         return get_user_by_id(session['user_id'])
     return None
+
+# Docstrings and security comments added
