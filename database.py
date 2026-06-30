@@ -205,3 +205,5 @@ def log_action(user_id, username, action, details='', ip_address=''):
         conn.close()
     except:
         pass
+
+# Logger info added
