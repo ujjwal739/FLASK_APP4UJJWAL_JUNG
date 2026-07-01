@@ -112,3 +112,5 @@ python tests.py
 *   **Strict Auth Checks**: Custom session tokens and route decorator validation for user and admin namespaces.
 *   **Robust Password Policies**: Enforces minimum length, capital letters, and special character presence during registration.
 *   **Data Validation**: Protection against invalid input formats (e.g., email verification checks).
+
+# Updated Security Guidelines
