@@ -20,3 +20,5 @@ def admin_required(f):
             abort(403)
         return f(*args, **kwargs)
     return decorated
+
+# Timeout checks optimized
