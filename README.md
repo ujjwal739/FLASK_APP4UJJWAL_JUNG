@@ -1,4 +1,4 @@
-# SEC//BOARD: Security Tip & Awareness Board
+ SEC//BOARD: Security Tip & Awareness Board
 
 A robust, secure Flask web application built for cybersecurity education and awareness. This platform allows users to explore security tips, test their knowledge with security quizzes, share comments, access security resources, and stay up-to-date with announcements.
 
@@ -6,7 +6,7 @@ This project was developed as part of **ST5041CMD The Internet and Web Technolog
 
 ---
 
-## 🌟 Key Features
+ Key Features
 
 *   **Cybersecurity Tips**: Curated tips categorized by topic, complete with severity levels (`low`, `medium`, `high`, `critical`).
 *   **Interactive Quizzes**: Test security awareness with multiple-choice questions and detailed explanations.
@@ -19,7 +19,7 @@ This project was developed as part of **ST5041CMD The Internet and Web Technolog
 
 ---
 
-## 🛠️ Technology Stack
+Technology Stack
 
 *   **Backend**: Python, Flask, SQLite3
 *   **Frontend**: Semantic HTML5, Vanilla CSS3 (with responsive layouts)
@@ -28,7 +28,7 @@ This project was developed as part of **ST5041CMD The Internet and Web Technolog
 
 ---
 
-## 🚀 Getting Started
+ Getting Started
 
 ### 1. Installation & Setup
 
@@ -74,7 +74,7 @@ The application will start on `http://localhost:5001`.
 
 ---
 
-## 🧪 Testing
+ Testing
 
 To run the complete automated test suite (30 test cases):
 
@@ -84,7 +84,7 @@ python tests.py
 
 ---
 
-## 📁 Codebase Structure
+ Codebase Structure
 
 ```text
 .
@@ -106,7 +106,7 @@ python tests.py
 
 ---
 
-## 🔒 Security Practices Implemented
+ Security Practices Implemented
 
 *   **Security Headers**: Integrated HTTP headers such as `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Referrer-Policy: strict-origin-when-cross-origin`.
 *   **Strict Auth Checks**: Custom session tokens and route decorator validation for user and admin namespaces.
