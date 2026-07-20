@@ -16,7 +16,7 @@ I also tried to follow some basic security practices while building it — thing
 
 ## Tech used
 
-- **Backend:** Python, Flask, SQLite3
+- **Backend:** Python, Flask, Mysql
 - **Frontend:** Plain HTML5 and CSS3, no frameworks
 - **Testing:** Python's `unittest`, around 30 tests covering auth, routes, and permissions
 
